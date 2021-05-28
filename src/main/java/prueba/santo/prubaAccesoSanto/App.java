@@ -32,6 +32,7 @@ public class App {
 	private static final String ENVASADOS_LOTE_ENVASADO = "lote_envasado";
 	private static final String ENVASADOS_REF_ENVASADO = "referencia_articulo";
 	private static final String ENVASADOS_DESCRIPCION = "descripcion";
+	private static final String ENVASADOS_PESO = "peso";
 	private static final String ENVASADOS_UNIDADES = "unidades";
 	private static final String ENVASADOS_FECHA_FINALIZADO = "finalizado";
 	
@@ -59,7 +60,7 @@ public class App {
 	private static final String UPDATE_FABIRCACION = "UPDATE FABRICACIONES SET CANTIDAD_DISPONIBLE = ? WHERE ID_FABRICACION = ?";
 	
 	private static final String UPDATE_ENVASADO_FINALIZADO = "UPDATE ENVASADOS SET FINALIZADO = 1 WHERE ID_ENVASADO = ?";
-	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, operacion_envase) VALUES (?,?,?)";
+	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, peso, operacion_envase) VALUES (?,?,?,?)";
 
 	public static Connection ejecutarConexion() throws SQLException {
 		Connection conn = DriverManager.getConnection(url);
@@ -125,7 +126,8 @@ public class App {
 				
 				insertarResultadosAgrupados(connection, new ResultadoAgrupado(
 						envasado.getLote_envasado().toString(), 
-						envasado.getDescripcion(), 
+						envasado.getDescripcion(),
+						envasado.getPeso() * envasado.getUnidades(),
 						resultadosAgrupados));
 			}
 			
@@ -150,7 +152,7 @@ public class App {
 		//Si cantidadDisponible es menor que kg necesarios
 		if(fabricacion.getCantidad_disponible() < auxKgNecesarios) {
 			
-			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, auxKgNecesarios,
+			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, fabricacion.getCantidad_disponible(),
 					fabricacion);
 			
 			
@@ -186,7 +188,8 @@ public class App {
 		
 		prepared.setString(1, resultadoAgrupado.getLote());
 		prepared.setString(2, resultadoAgrupado.getDescripcion_producto());
-		prepared.setString(3, resultado);
+		prepared.setDouble(3, resultadoAgrupado.getPesoTotal());
+		prepared.setString(4, resultado);
 
 		
 		prepared.executeUpdate();
@@ -312,7 +315,8 @@ public class App {
 			envasados.add(new Envasado(rs.getLong(ENVASADOS_ID),
 					rs.getInt(ENVASADOS_LOTE_ENVASADO), 
 					rs.getString(ENVASADOS_REF_ENVASADO), 
-					rs.getNString(ENVASADOS_DESCRIPCION), 
+					rs.getNString(ENVASADOS_DESCRIPCION),
+					rs.getDouble(ENVASADOS_PESO),
 					rs.getInt(ENVASADOS_UNIDADES), 
 					rs.getBoolean(ENVASADOS_FECHA_FINALIZADO)));
 		}

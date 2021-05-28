@@ -6,17 +6,19 @@ public class Envasado {
 	private Integer lote_envasado;
 	private String referencia_articulo;
 	private String descripcion;
+	private Double peso;
 	private Integer unidades;
 	private Boolean finalizado;
 	
 	
-	public Envasado(Long id_envasado, Integer lote_envasado, String referencia_articulo, String descripcion, Integer unidades,
+	public Envasado(Long id_envasado, Integer lote_envasado, String referencia_articulo, String descripcion,Double peso, Integer unidades,
 			Boolean finalizado) {
 		super();
 		this.id_envasado = id_envasado;
 		this.lote_envasado = lote_envasado;
 		this.referencia_articulo = referencia_articulo;
 		this.descripcion = descripcion;
+		this.peso = peso;
 		this.unidades = unidades;
 		this.finalizado = finalizado;
 	}
@@ -86,6 +88,16 @@ public class Envasado {
 
 	public void setId_envasado(Long id_envasado) {
 		this.id_envasado = id_envasado;
+	}
+
+
+	public Double getPeso() {
+		return peso;
+	}
+
+
+	public void setPeso(Double peso) {
+		this.peso = peso;
 	}
 	
 	
