@@ -8,8 +8,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.lang.StringUtils;
 
 import prueba.santo.prubaAccesoSanto.entity.Envasado;
 import prueba.santo.prubaAccesoSanto.entity.Fabricacion;
@@ -24,6 +26,7 @@ public class App {
 	static Connection conn = null;
 	static String driver = "sun.jdbc.odbc.JdbcOdbcDriver";
 	static String url = "jdbc:ucanaccess://C:\\Users\\Jorge\\Documents\\bbddPrueba.accdb";
+	static String urlAccessPcRosa = "jdbc:ucanaccess://C:/Users/Jorge/Documents/prueba.mdb";
 	
 	private static final String ENVASADOS_ID = "id_envasado";
 	private static final String ENVASADOS_LOTE_ENVASADO = "lote_envasado";
@@ -40,7 +43,6 @@ public class App {
 	private static final String FABRICACION_ID = "id_fabricacion";
 	private static final String FABRICACION_LOTE_PRODUCTO = "lote_fabricacion";
 	private static final String FABRICACION_REF_PRODUCTO = "referencia_producto";
-	private static final String FABRICACION_FECHA_FAB = "descripcion";
 	private static final String FABRICACION_CANTIDAD_FABRICADA = "cantidad_fabricada";
 	private static final String FABRICACION_CANTIDAD_DISPONIBLE = "cantidad_disponible";
 	
@@ -57,9 +59,10 @@ public class App {
 	private static final String UPDATE_FABIRCACION = "UPDATE FABRICACIONES SET CANTIDAD_DISPONIBLE = ? WHERE ID_FABRICACION = ?";
 	
 	private static final String UPDATE_ENVASADO_FINALIZADO = "UPDATE ENVASADOS SET FINALIZADO = 1 WHERE ID_ENVASADO = ?";
+	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, operacion_envase) VALUES (?,?,?)";
 
 	public static Connection ejecutarConexion() throws SQLException {
-		Connection conn = DriverManager.getConnection("jdbc:ucanaccess://C:/Users/Jorge/Documents/bbddPrueba.accdb");
+		Connection conn = DriverManager.getConnection(url);
 		return conn;
 	}
 
@@ -83,9 +86,9 @@ public class App {
 	}
 
 	private static void recorrerLista(List<Envasado> envasados, Connection connection) throws SQLException {
-		
+			List<String> resultadosAgrupados;
 		for (Envasado envasado : envasados) {
-			
+			resultadosAgrupados = new ArrayList<String>();
 			List<Formula> formulaArticulo = buscarFormulaPorArticulo(connection, envasado.getReferencia_articulo());
 			
 			for (Formula formula : formulaArticulo) {
@@ -105,33 +108,88 @@ public class App {
 						
 						if(auxKgNecesarios > 0.0) {
 							
-							if(fabricacion.getCantidad_disponible() >= auxKgNecesarios) {//Si cantidadDisponible es mayot que kgnecesarios
-									auxKgNecesarios = procesarResultadocantidadDisponibleMayorKGNecesarios(connection, auxKgNecesarios, fabricacion, envasado);
-									if(auxKgNecesarios == 0.0) {
-										//poner a 1 el finalizado del envasado
-										atualizarFinalizadoEnvasado(connection, envasado.getId_envasado());
-									}
-							}
-							
-							//Si son iguales
-							
-							//Si cantidadDisponible es menor que kg necesarios
-							if(fabricacion.getCantidad_disponible() < auxKgNecesarios) {
-								
-								auxKgNecesarios = procesarResultadocantidadDisponibleMenorKGNecesarios(connection, auxKgNecesarios, fabricacion, envasado);
-								if(auxKgNecesarios == 0.0) {
-									//poner a 1 el finalizado del envasado
-									atualizarFinalizadoEnvasado(connection, envasado.getId_envasado());
-								}
-							}
+							auxKgNecesarios = procesar(connection, resultadosAgrupados, envasado, formulaArticulo,
+									auxKgNecesarios, fabricacion);
 						}
 
 					}
+				
 				}
+				
+			}
+			
+			
+
+			
+			if(CollectionUtils.isNotEmpty(resultadosAgrupados)) {
+				
+				insertarResultadosAgrupados(connection, new ResultadoAgrupado(
+						envasado.getLote_envasado().toString(), 
+						envasado.getDescripcion(), 
+						resultadosAgrupados));
 			}
 			
 			
 		}
+		
+	}
+
+	private static Double procesar(Connection connection, List<String> resultadosAgrupados, Envasado envasado,
+			List<Formula> formulaArticulo, Double auxKgNecesarios, Fabricacion fabricacion) throws SQLException {
+		if(fabricacion.getCantidad_disponible() >= auxKgNecesarios) {//Si cantidadDisponible es mayot que kgnecesarios
+			
+			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, auxKgNecesarios,
+					fabricacion);
+			
+				auxKgNecesarios = procesarResultadocantidadDisponibleMayorKGNecesarios(connection, auxKgNecesarios, fabricacion, envasado);																		
+				terminarProductoEnvase(connection, envasado, auxKgNecesarios);
+		}
+		
+
+		
+		//Si cantidadDisponible es menor que kg necesarios
+		if(fabricacion.getCantidad_disponible() < auxKgNecesarios) {
+			
+			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, auxKgNecesarios,
+					fabricacion);
+			
+			
+			auxKgNecesarios = procesarResultadocantidadDisponibleMenorKGNecesarios(connection, auxKgNecesarios, fabricacion, envasado);
+			terminarProductoEnvase(connection, envasado, auxKgNecesarios);
+		}
+		return auxKgNecesarios;
+	}
+
+	private static void terminarProductoEnvase(Connection connection, Envasado envasado, Double auxKgNecesarios)
+			throws SQLException {
+		if(auxKgNecesarios == 0.0) {
+			//poner a 1 el finalizado del envasado
+			atualizarFinalizadoEnvasado(connection, envasado.getId_envasado());
+		}
+	}
+
+	private static void rellenarListaOperacionEnvase(List<String> resultadosAgrupados, List<Formula> formulaArticulo,
+			Double auxKgNecesarios, Fabricacion fabricacion) {
+		if(formulaArticulo.size() > 1) {
+		resultadosAgrupados.add(auxKgNecesarios + "(" + fabricacion.getLote_fabricacion() + "-" + fabricacion.getReferencia_producto() + ")");
+		}else {
+			
+			resultadosAgrupados.add(auxKgNecesarios + "(" + fabricacion.getLote_fabricacion()+ ")");
+		}
+	}
+
+	private static void insertarResultadosAgrupados(Connection connection, ResultadoAgrupado resultadoAgrupado) throws SQLException {
+
+		PreparedStatement prepared = connection.prepareStatement(INSERT_RESULTADOS_AGRUPADOS);
+		
+		String resultado = resultadoAgrupado.getResultados_agrupados().stream().filter(StringUtils::isNotEmpty).collect(Collectors.joining(","));
+		
+		prepared.setString(1, resultadoAgrupado.getLote());
+		prepared.setString(2, resultadoAgrupado.getDescripcion_producto());
+		prepared.setString(3, resultado);
+
+		
+		prepared.executeUpdate();
 		
 	}
 
