@@ -2,46 +2,44 @@ package prueba.santo.prubaAccesoSanto.entity;
 
 public class Formula {
 	
-	private String referencia_articulo;
+	private String referencia_amasijo;
 	
-	private String referencia_producto;
+	private String referencia_materia_prima;
 	
-	private Double porcentajeGramos;
+	private Double kilos;
+	
+	
 
-	public Formula(String referencia_articulo, String referencia_producto, Double porcentajeGramos) {
+	public Formula(String referencia_amasijo, String referencia_materia_prima, Double kilos) {
 		super();
-		this.referencia_articulo = referencia_articulo;
-		this.referencia_producto = referencia_producto;
-		this.porcentajeGramos = porcentajeGramos;
+		this.referencia_amasijo = referencia_amasijo;
+		this.referencia_materia_prima = referencia_materia_prima;
+		this.kilos = kilos;
 	}
+
+	public String getReferencia_amasijo() {
+		return referencia_amasijo;
+	}
+
+	public void setReferencia_amasijo(String referencia_amasijo) {
+		this.referencia_amasijo = referencia_amasijo;
+	}
+
+	public String getReferencia_materia_prima() {
+		return referencia_materia_prima;
+	}
+
+	public void setReferencia_materia_prima(String referencia_materia_prima) {
+		this.referencia_materia_prima = referencia_materia_prima;
+	}
+
+	public Double getKilos() {
+		return kilos;
+	}
+
+	public void setKilos(Double kilos) {
+		this.kilos = kilos;
+	}
+
 	
-	public Formula () {};
-
-	public String getReferencia_articulo() {
-		return referencia_articulo;
-	}
-
-	public void setReferencia_articulo(String referencia_articulo) {
-		this.referencia_articulo = referencia_articulo;
-	}
-
-	public String getReferencia_producto() {
-		return referencia_producto;
-	}
-
-	public void setReferencia_producto(String referencia_producto) {
-		this.referencia_producto = referencia_producto;
-	}
-
-	public Double getPorcentajeGramos() {
-		return porcentajeGramos;
-	}
-
-	public void setPorcentajeGramos(Double porcentaje) {
-		this.porcentajeGramos = porcentaje;
-	}
-	
-	
-	
-
 }

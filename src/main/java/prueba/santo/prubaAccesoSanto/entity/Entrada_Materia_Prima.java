@@ -2,7 +2,7 @@ package prueba.santo.prubaAccesoSanto.entity;
 
 import java.util.Date;
 
-public class Fabricacion {
+public class Entrada_Materia_Prima {
 
 	private Long id_fabricacion;
 	private Integer lote_fabricacion;
@@ -15,7 +15,7 @@ public class Fabricacion {
 	
 	
 	
-	public Fabricacion(Long id_fabricacion, Integer lote_fabrica, String referencia_producto,  Integer cantidad,
+	public Entrada_Materia_Prima(Long id_fabricacion, Integer lote_fabrica, String referencia_producto,  Integer cantidad,
 			Double cantidad_disponible) {
 		super();
 		this.id_fabricacion =  id_fabricacion;

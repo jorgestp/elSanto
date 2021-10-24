@@ -15,8 +15,8 @@ import javax.swing.JOptionPane;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.lang.StringUtils;
 
-import prueba.santo.prubaAccesoSanto.entity.Envasado;
-import prueba.santo.prubaAccesoSanto.entity.Fabricacion;
+import prueba.santo.prubaAccesoSanto.entity.Amasijo;
+import prueba.santo.prubaAccesoSanto.entity.Entrada_Materia_Prima;
 import prueba.santo.prubaAccesoSanto.entity.Formula;
 
 /**
@@ -27,23 +27,24 @@ public class App {
 	static Connection conn = null;
 	static String driver = "sun.jdbc.odbc.JdbcOdbcDriver";
 
-	static String urlAccessPcRosa = "jdbc:ucanaccess://C:/Users/Jorge/Documents/prueba.mdb";
+	static String urlDocumentos = "jdbc:ucanaccess://C:/Users/Jorge/Documents/trazabilidad_Materia_Prima.mdb";
 
 //	static String url = "jdbc:ucanaccess://C:\\Users\\Jorge\\Documents\\bbddPrueba.accdb";
 //	private final static String urlRaiz = "jdbc:ucanaccess://C:\\elSanto.mdb";
-	private final static String urlDocumentos = "jdbc:ucanaccess://C:\\Users\\USUARIO\\Documents\\elSanto.mdb";
+//	private final static String urlDocumentos = "jdbc:ucanaccess://C:\\Users\\USUARIO\\Documents\\elSanto.mdb";
 
-	private static final String ENVASADOS_ID = "id_envasado";
-	private static final String ENVASADOS_LOTE_ENVASADO = "lote_envasado";
-	private static final String ENVASADOS_REF_ENVASADO = "referencia_articulo";
-	private static final String ENVASADOS_DESCRIPCION = "descripcion";
-	private static final String ENVASADOS_PESO = "peso";
-	private static final String ENVASADOS_UNIDADES = "unidades";
-	private static final String ENVASADOS_FECHA_FINALIZADO = "finalizado";
+	private static final String AMASIJOS_ID = "id_amasijo";
+	private static final String AMASIJOS_LOTE_AMASIJO = "lote";
+	private static final String AMASIJOS_REF_AMASIJO = "referencia_amasijo";
+	private static final String AMASIJOS_DESCRIPCION = "descripcion";
+	private static final String AMASIJOS_PESO = "peso_unitario";
+	private static final String AMASIJOS_CANTIDAD_AMASIJO = "cantidad_amasijo";
+	private static final String AMASIJOS_PESO_TOTAL = "peso_total";
+	private static final String AMASIJOS_FECHA_FINALIZADO = "finalizado";
 
-	private static final String FORMULA_REF_ARTICULO = "referencia_articulo";
-	private static final String FORMULA_REF_PRODUCTO = "referencia_producto";
-	private static final String FORMULA_PORCENTAJE = "porcentaje";
+	private static final String FORMULA_REF_AMASIJO = "referencia_amasijo";
+	private static final String FORMULA_REF_MATERIA_PRIMA = "referencia_materia_prima";
+	private static final String FORMULA_KILOS = "kilos";
 
 	private static final String FABRICACION_ID = "id_fabricacion";
 	private static final String FABRICACION_LOTE_PRODUCTO = "lote_fabricacion";
@@ -51,8 +52,8 @@ public class App {
 	private static final String FABRICACION_CANTIDAD_FABRICADA = "cantidad_fabricada";
 	private static final String FABRICACION_CANTIDAD_DISPONIBLE = "cantidad_disponible";
 
-	private static final String SELECT_ENVASADOS_SIN_FINALIZAR = "SELECT * FROM ENVASADOS WHERE FINALIZADO = 0";
-	private static final String SELECT_FORMULA_BY_REF_ARTICULO = "SELECT * FROM FORMULA WHERE REFERENCIA_ARTICULO = ?";
+	private static final String SELECT_AMASIJOS_SIN_FINALIZAR = "SELECT * FROM AMASIJO WHERE FINALIZADO = 0";
+	private static final String SELECT_FORMULA_BY_REF_ARTICULO = "SELECT * FROM FORMULA WHERE REFERENCIA_AMASIJO = ?";
 	private static final String SELECT_FABRICACIONESBYREF_PRODUCTO_AND_CANTIDAD_DISPONIBLE = "SELECT * FROM FABRICACIONES "
 			+ "WHERE REFERENCIA_PRODUCTO = ? AND cantidad_disponible > 0";
 
@@ -84,27 +85,28 @@ public class App {
 			connection = App.ejecutarConexion();
 
 			// vemos si hay algun envasado por ejecutar
-			List<Envasado> envasados = App.getListaEnvasadosSinTerminar(connection);
+			List<Amasijo> amasijosSinTerminar = App.getListaAmasijosSinTerminar(connection);
 
-			if (CollectionUtils.isNotEmpty(envasados)) {
+			if (CollectionUtils.isNotEmpty(amasijosSinTerminar)) {
 
-				recorrerLista(envasados, connection);
-				
-				if(App.getListaEnvasadosSinTerminar(connection).size() == 0) {
-					
-					JOptionPane.showMessageDialog(null, "Proceso terminado CORRECTAMENTE.", "Proceso terminado correctamente",
-							JOptionPane.INFORMATION_MESSAGE);
-				}else {
-					
-					JOptionPane.showMessageDialog(null, "Proceso terminado CORRECTAMENTE.", "Proceso terminado con algun artículo sin terminar "
-							+ "su trazabilidad. Asegurate que haya productos fabricados suficientes para terminar el proceso. Gracias",
+				recorrerLista(amasijosSinTerminar, connection);
+
+				if (App.getListaAmasijosSinTerminar(connection).size() == 0) {
+
+					JOptionPane.showMessageDialog(null, "Proceso terminado CORRECTAMENTE.",
+							"Proceso terminado correctamente", JOptionPane.INFORMATION_MESSAGE);
+				} else {
+
+					JOptionPane.showMessageDialog(null, "Proceso terminado CORRECTAMENTE.",
+							"Proceso terminado con algun artículo sin terminar "
+									+ "su trazabilidad. Asegurate que haya productos fabricados suficientes para terminar el proceso. Gracias",
 							JOptionPane.INFORMATION_MESSAGE);
 				}
 
 			} else {
 
 				JOptionPane.showMessageDialog(null,
-						"Todos los artículos a envasar hasta la fecha estan finalizados. Asegúrese de introducir nuevos articulos a envasar SIN FINALIZAR. Gracias",
+						"Todos los masijos a procesar hasta la fecha estan finalizados. Asegúrese de introducir nuevos articulos a amasijos SIN FINALIZAR. Gracias",
 						TRAZABILIDAD_EL_SANTO, JOptionPane.WARNING_MESSAGE);
 			}
 
@@ -118,32 +120,32 @@ public class App {
 		}
 	}
 
-	private static void recorrerLista(List<Envasado> envasados, Connection connection) throws SQLException {
+	private static void recorrerLista(List<Amasijo> amasijosSinTerminar, Connection connection) throws SQLException {
 		List<String> resultadosAgrupados;
-		for (Envasado envasado : envasados) {
+		for (Amasijo amasijo : amasijosSinTerminar) {
 			resultadosAgrupados = new ArrayList<String>();
-			List<Formula> formulaArticulo = buscarFormulaPorArticulo(connection, envasado.getReferencia_articulo());
+			List<Formula> formulaArticulo = buscarFormulaPorArticulo(connection, amasijo.getReferencia_amasijo());
 
 			for (Formula formula : formulaArticulo) {
 
-				List<Fabricacion> fabricacionesProducto = devuelveFabricaciones(connection,
-						formula.getReferencia_producto());
+				List<Entrada_Materia_Prima> fabricacionesProducto = devuelveFabricaciones(connection,
+						formula.getReferencia_amasijo());
 
-				Double kgNecesarios = (envasado.getUnidades() * formula.getPorcentajeGramos())/1000;
+				Double kgNecesarios = (amasijo.getPeso_total());
 
 				Double totalFabricacionDisponible = fabricacionesProducto.stream()
-						.mapToDouble(Fabricacion::getCantidad_disponible).sum();
+						.mapToDouble(Entrada_Materia_Prima::getCantidad_disponible).sum();
 
 				if (totalFabricacionDisponible >= kgNecesarios) {
 
 					Double auxKgNecesarios = kgNecesarios;
 
-					for (Fabricacion fabricacion : fabricacionesProducto) {
+					for (Entrada_Materia_Prima entrada_materia_prima : fabricacionesProducto) {
 
 						if (auxKgNecesarios > 0.0) {
 
-							auxKgNecesarios = procesar(connection, resultadosAgrupados, envasado, formulaArticulo,
-									auxKgNecesarios, fabricacion);
+							auxKgNecesarios = procesar(connection, resultadosAgrupados, amasijo, formulaArticulo,
+									auxKgNecesarios, entrada_materia_prima);
 						}
 
 					}
@@ -154,56 +156,57 @@ public class App {
 
 			if (CollectionUtils.isNotEmpty(resultadosAgrupados)) {
 
-				insertarResultadosAgrupados(connection, new ResultadoAgrupado(envasado.getLote_envasado().toString(),
-						envasado.getDescripcion(), envasado.getPeso() * envasado.getUnidades(), resultadosAgrupados));
+				insertarResultadosAgrupados(connection, new ResultadoAgrupado(amasijo.getLote().toString(),
+						amasijo.getDescripcion(), amasijo.getCantidad_amasijo(), amasijo.getPeso_total(), 
+						resultadosAgrupados));
 			}
 
 		}
 
 	}
 
-	private static Double procesar(Connection connection, List<String> resultadosAgrupados, Envasado envasado,
-			List<Formula> formulaArticulo, Double auxKgNecesarios, Fabricacion fabricacion) throws SQLException {
-		if (fabricacion.getCantidad_disponible() >= auxKgNecesarios) {// Si cantidadDisponible es mayot que kgnecesarios
+	private static Double procesar(Connection connection, List<String> resultadosAgrupados, Amasijo envasado,
+			List<Formula> formulaArticulo, Double auxKgNecesarios, Entrada_Materia_Prima entrada_materia_prima) throws SQLException {
+		if (entrada_materia_prima.getCantidad_disponible() >= auxKgNecesarios) {// Si cantidadDisponible es mayot que kgnecesarios
 
-			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, auxKgNecesarios, fabricacion);
+			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, auxKgNecesarios, entrada_materia_prima);
 
 			auxKgNecesarios = procesarResultadocantidadDisponibleMayorKGNecesarios(connection, auxKgNecesarios,
-					fabricacion, envasado);
+					entrada_materia_prima, envasado);
 			terminarProductoEnvase(connection, envasado, auxKgNecesarios);
 		}
 
 		// Si cantidadDisponible es menor que kg necesarios
-		if (fabricacion.getCantidad_disponible() < auxKgNecesarios) {
+		if (entrada_materia_prima.getCantidad_disponible() < auxKgNecesarios) {
 
-			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, fabricacion.getCantidad_disponible(),
-					fabricacion);
+			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, entrada_materia_prima.getCantidad_disponible(),
+					entrada_materia_prima);
 
 			auxKgNecesarios = procesarResultadocantidadDisponibleMenorKGNecesarios(connection, auxKgNecesarios,
-					fabricacion, envasado);
+					entrada_materia_prima, envasado);
 			terminarProductoEnvase(connection, envasado, auxKgNecesarios);
 		}
 		return auxKgNecesarios;
 	}
 
-	private static void terminarProductoEnvase(Connection connection, Envasado envasado, Double auxKgNecesarios)
+	private static void terminarProductoEnvase(Connection connection, Amasijo amasijo, Double auxKgNecesarios)
 			throws SQLException {
 		if (auxKgNecesarios == 0.0) {
 			// poner a 1 el finalizado del envasado
-			atualizarFinalizadoEnvasado(connection, envasado.getId_envasado());
+			atualizarFinalizadoEnvasado(connection, amasijo.getId_amasijo());
 		}
 	}
 
 	private static void rellenarListaOperacionEnvase(List<String> resultadosAgrupados, List<Formula> formulaArticulo,
-			Double auxKgNecesarios, Fabricacion fabricacion) {
-		
-		auxKgNecesarios = (Math.round(auxKgNecesarios*100.0)/100.0);
+			Double auxKgNecesarios, Entrada_Materia_Prima entrada_materia_prima) {
+
+		auxKgNecesarios = (Math.round(auxKgNecesarios * 100.0) / 100.0);
 		if (formulaArticulo.size() > 1) {
-			resultadosAgrupados.add(auxKgNecesarios + "(" + fabricacion.getLote_fabricacion() + "-"
-					+ fabricacion.getReferencia_producto() + ")");
+			resultadosAgrupados.add(auxKgNecesarios + "(" + entrada_materia_prima.getLote_fabricacion() + "-"
+					+ entrada_materia_prima.getReferencia_producto() + ")");
 		} else {
 
-			resultadosAgrupados.add(auxKgNecesarios + "(" + fabricacion.getLote_fabricacion() + ")");
+			resultadosAgrupados.add(auxKgNecesarios + "(" + entrada_materia_prima.getLote_fabricacion() + ")");
 		}
 	}
 
@@ -225,29 +228,29 @@ public class App {
 	}
 
 	private static Double procesarResultadocantidadDisponibleMenorKGNecesarios(Connection connection,
-			Double kgNecesarios, Fabricacion fabricacion, Envasado envasado) throws SQLException {
+			Double kgNecesarios, Entrada_Materia_Prima entrada_materia_prima, Amasijo amasijo) throws SQLException {
 
-		insertarResultado(connection, envasado.getReferencia_articulo(), envasado.getDescripcion(),
-				envasado.getLote_envasado(), fabricacion.getLote_fabricacion(), fabricacion.getCantidad_disponible(),
-				fabricacion.getReferencia_producto());
+		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(),
+				amasijo.getLote(), entrada_materia_prima.getLote_fabricacion(), entrada_materia_prima.getCantidad_disponible(),
+				entrada_materia_prima.getReferencia_producto());
 
-		// actualizar fabricacion
-		actualizarFabricacion(connection, fabricacion.getId_fabricacion(), 0.0);
+		// actualizar entrada_materia_prima
+		actualizarFabricacion(connection, entrada_materia_prima.getId_fabricacion(), 0.0);
 
-		return kgNecesarios - fabricacion.getCantidad_disponible();
+		return kgNecesarios - entrada_materia_prima.getCantidad_disponible();
 	}
 
 	private static Double procesarResultadocantidadDisponibleMayorKGNecesarios(Connection connection,
-			Double kgNecesarios, Fabricacion fabricacion, Envasado envasado) throws SQLException {
+			Double kgNecesarios, Entrada_Materia_Prima entrada_materia_prima, Amasijo amasijo) throws SQLException {
 
-		double cantidadDisponibleActualizada = fabricacion.getCantidad_disponible() - kgNecesarios;
+		double cantidadDisponibleActualizada = entrada_materia_prima.getCantidad_disponible() - kgNecesarios;
 		// Insertar en resultados;
-		insertarResultado(connection, envasado.getReferencia_articulo(), envasado.getDescripcion(),
-				envasado.getLote_envasado(), fabricacion.getLote_fabricacion(), kgNecesarios,
-				fabricacion.getReferencia_producto());
+		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(),
+				amasijo.getLote(), entrada_materia_prima.getLote_fabricacion(), kgNecesarios,
+				entrada_materia_prima.getReferencia_producto());
 
-		// actualizar fabricacion
-		actualizarFabricacion(connection, fabricacion.getId_fabricacion(), cantidadDisponibleActualizada);
+		// actualizar entrada_materia_prima
+		actualizarFabricacion(connection, entrada_materia_prima.getId_fabricacion(), cantidadDisponibleActualizada);
 
 		return 0.0;
 	}
@@ -288,17 +291,17 @@ public class App {
 		prepared.executeUpdate();
 	}
 
-	private static List<Fabricacion> devuelveFabricaciones(Connection connection, String referencia_producto)
+	private static List<Entrada_Materia_Prima> devuelveFabricaciones(Connection connection, String referencia_producto)
 			throws SQLException {
 
 		PreparedStatement prepared = connection
 				.prepareStatement(SELECT_FABRICACIONESBYREF_PRODUCTO_AND_CANTIDAD_DISPONIBLE);
 		prepared.setString(1, referencia_producto);
 		ResultSet rs = prepared.executeQuery();
-		List<Fabricacion> lista_fabricacion = new ArrayList<Fabricacion>();
+		List<Entrada_Materia_Prima> lista_fabricacion = new ArrayList<Entrada_Materia_Prima>();
 
 		while (rs.next()) {
-			lista_fabricacion.add(new Fabricacion(rs.getLong(FABRICACION_ID), rs.getInt(FABRICACION_LOTE_PRODUCTO),
+			lista_fabricacion.add(new Entrada_Materia_Prima(rs.getLong(FABRICACION_ID), rs.getInt(FABRICACION_LOTE_PRODUCTO),
 					rs.getString(FABRICACION_REF_PRODUCTO), rs.getInt(FABRICACION_CANTIDAD_FABRICADA),
 					rs.getDouble(FABRICACION_CANTIDAD_DISPONIBLE)));
 
@@ -307,16 +310,16 @@ public class App {
 		return lista_fabricacion;
 	}
 
-	private static List<Formula> buscarFormulaPorArticulo(Connection connection, String ref_articulo)
+	private static List<Formula> buscarFormulaPorArticulo(Connection connection, String ref_amasijo)
 			throws SQLException {
 		PreparedStatement prepared = connection.prepareStatement(SELECT_FORMULA_BY_REF_ARTICULO);
 
-		prepared.setString(1, ref_articulo);
+		prepared.setString(1, ref_amasijo);
 		ResultSet rs = prepared.executeQuery();
 		List<Formula> formulaProducto = new ArrayList<Formula>();
 		while (rs.next()) {
-			formulaProducto.add(new Formula(rs.getNString(FORMULA_REF_ARTICULO), rs.getNString(FORMULA_REF_PRODUCTO),
-					rs.getDouble(FORMULA_PORCENTAJE)));
+			formulaProducto.add(new Formula(rs.getNString(FORMULA_REF_AMASIJO),
+					rs.getNString(FORMULA_REF_MATERIA_PRIMA), rs.getDouble(FORMULA_KILOS)));
 		}
 		rs.close();
 		prepared.close();
@@ -324,17 +327,17 @@ public class App {
 		return formulaProducto;
 	}
 
-	private static List<Envasado> getListaEnvasadosSinTerminar(Connection connection) throws SQLException {
-		List<Envasado> envasados = new ArrayList<Envasado>();
+	private static List<Amasijo> getListaAmasijosSinTerminar(Connection connection) throws SQLException {
+		List<Amasijo> envasados = new ArrayList<Amasijo>();
 		Statement s = connection.createStatement();
-		ResultSet rs = s.executeQuery(SELECT_ENVASADOS_SIN_FINALIZAR);
+		ResultSet rs = s.executeQuery(SELECT_AMASIJOS_SIN_FINALIZAR);
 
 		while (rs.next()) {
 
-			envasados.add(new Envasado(rs.getLong(ENVASADOS_ID), rs.getInt(ENVASADOS_LOTE_ENVASADO),
-					rs.getString(ENVASADOS_REF_ENVASADO), rs.getNString(ENVASADOS_DESCRIPCION),
-					rs.getDouble(ENVASADOS_PESO), rs.getInt(ENVASADOS_UNIDADES),
-					rs.getBoolean(ENVASADOS_FECHA_FINALIZADO)));
+			envasados.add(new Amasijo(rs.getLong(AMASIJOS_ID), rs.getInt(AMASIJOS_LOTE_AMASIJO),
+					rs.getString(AMASIJOS_REF_AMASIJO), rs.getString(AMASIJOS_DESCRIPCION), rs.getDouble(AMASIJOS_PESO),
+					rs.getInt(AMASIJOS_CANTIDAD_AMASIJO), rs.getDouble(AMASIJOS_PESO_TOTAL),
+					rs.getBoolean(AMASIJOS_FECHA_FINALIZADO)));
 		}
 
 		rs.close();
