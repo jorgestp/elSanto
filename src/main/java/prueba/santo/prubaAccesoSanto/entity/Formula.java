@@ -6,13 +6,13 @@ public class Formula {
 	
 	private String referencia_producto;
 	
-	private Double porcentaje;
+	private Double porcentajeGramos;
 
-	public Formula(String referencia_articulo, String referencia_producto, Double porcentaje) {
+	public Formula(String referencia_articulo, String referencia_producto, Double porcentajeGramos) {
 		super();
 		this.referencia_articulo = referencia_articulo;
 		this.referencia_producto = referencia_producto;
-		this.porcentaje = porcentaje;
+		this.porcentajeGramos = porcentajeGramos;
 	}
 	
 	public Formula () {};
@@ -33,12 +33,12 @@ public class Formula {
 		this.referencia_producto = referencia_producto;
 	}
 
-	public Double getPorcentaje() {
-		return porcentaje;
+	public Double getPorcentajeGramos() {
+		return porcentajeGramos;
 	}
 
-	public void setPorcentaje(Double porcentaje) {
-		this.porcentaje = porcentaje;
+	public void setPorcentajeGramos(Double porcentaje) {
+		this.porcentajeGramos = porcentaje;
 	}
 	
 	
