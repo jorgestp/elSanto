@@ -4,62 +4,76 @@ import java.util.Date;
 
 public class Entrada_Materia_Prima {
 
-	private Long id_fabricacion;
-	private Integer lote_fabricacion;
-	private String referencia_producto;
-	private Date fecha_fabricacion;
-	private Integer cantidad;
-	private Double cantidad_disponible;
+	private Long id_materia_prima;
+	private Integer lote;
+	private String ref_materia_prima;
+	private Double entrada;
+	private Double disponible;
+	private String proveedor;
+	private String lote_externo;
+	private String albaran;
 	
 	
 	
-	
-	
-	public Entrada_Materia_Prima(Long id_fabricacion, Integer lote_fabrica, String referencia_producto,  Integer cantidad,
-			Double cantidad_disponible) {
+	public Entrada_Materia_Prima(Long id_materia_prima, Integer lote, String ref_materia_prima, Double entrada,
+			Double disponible, String proveedor, String lote_externo, String albaran) {
 		super();
-		this.id_fabricacion =  id_fabricacion;
-		this.lote_fabricacion = lote_fabrica;
-		this.referencia_producto = referencia_producto;
-		
-		this.cantidad = cantidad;
-		this.cantidad_disponible = cantidad_disponible;
+		this.id_materia_prima = id_materia_prima;
+		this.lote = lote;
+		this.ref_materia_prima = ref_materia_prima;
+		this.entrada = entrada;
+		this.disponible = disponible;
+		this.proveedor = proveedor;
+		this.lote_externo = lote_externo;
+		this.albaran = albaran;
 	}
-	public Integer getLote_fabricacion() {
-		return lote_fabricacion;
+	public Long getId_materia_prima() {
+		return id_materia_prima;
 	}
-	public void setLote_fabricacion(Integer lote_fabrica) {
-		this.lote_fabricacion = lote_fabrica;
+	public void setId_materia_prima(Long id_materia_prima) {
+		this.id_materia_prima = id_materia_prima;
 	}
-	public String getReferencia_producto() {
-		return referencia_producto;
+	public Integer getLote() {
+		return lote;
 	}
-	public void setReferencia_producto(String referencia_producto) {
-		this.referencia_producto = referencia_producto;
+	public void setLote(Integer lote) {
+		this.lote = lote;
 	}
-	public Date getFecha_fabricacion() {
-		return fecha_fabricacion;
+	public String getRef_materia_prima() {
+		return ref_materia_prima;
 	}
-	public void setFecha_fabricacion(Date fecha_fabricacion) {
-		this.fecha_fabricacion = fecha_fabricacion;
+	public void setRef_materia_prima(String ref_materia_prima) {
+		this.ref_materia_prima = ref_materia_prima;
 	}
-	public Integer getCantidad() {
-		return cantidad;
+	public Double getEntrada() {
+		return entrada;
 	}
-	public void setCantidad(Integer cantidad) {
-		this.cantidad = cantidad;
+	public void setEntrada(Double entrada) {
+		this.entrada = entrada;
 	}
-	public Double getCantidad_disponible() {
-		return cantidad_disponible;
+	public Double getDisponible() {
+		return disponible;
 	}
-	public void setCantidad_disponible(Double cantidad_disponible) {
-		this.cantidad_disponible = cantidad_disponible;
+	public void setDisponible(Double disponible) {
+		this.disponible = disponible;
 	}
-	public Long getId_fabricacion() {
-		return id_fabricacion;
+	public String getProveedor() {
+		return proveedor;
 	}
-	public void setId_fabricacion(Long id_fabricacion) {
-		this.id_fabricacion = id_fabricacion;
+	public void setProveedor(String proveedor) {
+		this.proveedor = proveedor;
+	}
+	public String getLote_externo() {
+		return lote_externo;
+	}
+	public void setLote_externo(String lote_externo) {
+		this.lote_externo = lote_externo;
+	}
+	public String getAlbaran() {
+		return albaran;
+	}
+	public void setAlbaran(String albaran) {
+		this.albaran = albaran;
 	}
 	
 	

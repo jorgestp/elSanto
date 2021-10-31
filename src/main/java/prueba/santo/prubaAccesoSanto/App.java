@@ -46,24 +46,27 @@ public class App {
 	private static final String FORMULA_REF_MATERIA_PRIMA = "referencia_materia_prima";
 	private static final String FORMULA_KILOS = "kilos";
 
-	private static final String FABRICACION_ID = "id_fabricacion";
-	private static final String FABRICACION_LOTE_PRODUCTO = "lote_fabricacion";
-	private static final String FABRICACION_REF_PRODUCTO = "referencia_producto";
-	private static final String FABRICACION_CANTIDAD_FABRICADA = "cantidad_fabricada";
-	private static final String FABRICACION_CANTIDAD_DISPONIBLE = "cantidad_disponible";
+	private static final String MATERIA_PRIMA_ID = "id_materia_prima";
+	private static final String MATERIA_PRIMA_LOTE = "lote";
+	private static final String MATERIA_PRIMA_REFERENCIA = "referencia_materia_prima";
+	private static final String MATERIA_PRIMA_ENTRADA = "kg_entrada";
+	private static final String MATERIA_PRIMA_DISPONIBLE = "kg_disponible";
+	private static final String MATERIA_PRIMA_ALBARAN = "albaran";
+	private static final String MATERIA_PRIMA_PROVEEDOR = "proveedor";
+	private static final String MATERIA_PRIMA_LOTE_EXTERNO = "lote_externo";
 
 	private static final String SELECT_AMASIJOS_SIN_FINALIZAR = "SELECT * FROM AMASIJO WHERE FINALIZADO = 0";
 	private static final String SELECT_FORMULA_BY_REF_ARTICULO = "SELECT * FROM FORMULA WHERE REFERENCIA_AMASIJO = ?";
-	private static final String SELECT_FABRICACIONESBYREF_PRODUCTO_AND_CANTIDAD_DISPONIBLE = "SELECT * FROM FABRICACIONES "
-			+ "WHERE REFERENCIA_PRODUCTO = ? AND cantidad_disponible > 0";
+	private static final String SELECT_MATERIA_PRIMA_BY_REF_MPRIMA_AND_KG_DISPONIBLE = "SELECT * FROM ENTRADA_MATERIA_PRIMA "
+			+ "WHERE REFERENCIA_MATERIA_PRIMA = ? AND KG_DISPONIBLE > 0";
 
 	private static final String INSERT_RESULTADO = "INSERT INTO RESULTADOS (referencia_envasado, descripcion, lote_envasado, lote_fabricacion, cantidad_kg, producto) "
 			+ "VALUES (?,?,?,?,?,?)";
 
-	private static final String UPDATE_FABIRCACION = "UPDATE FABRICACIONES SET CANTIDAD_DISPONIBLE = ? WHERE ID_FABRICACION = ?";
+	private static final String UPDATE_FABIRCACION = "UPDATE ENTRADA_MATERIA_PRIMA SET KG_DISPONIBLE = ? WHERE ID_MATERIA_PRIMA = ?";
 
 	private static final String UPDATE_ENVASADO_FINALIZADO = "UPDATE ENVASADOS SET FINALIZADO = 1 WHERE ID_ENVASADO = ?";
-	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, peso, operacion_envase) VALUES (?,?,?,?)";
+	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, cantidad_amasijos, peso_total, operacion_trazabilidad) VALUES (?,?,?,?,?)";
 
 	private static final Object MENSAJE_INFORMATIVO = "BIENVENIDO a la aplicación de trazabilidad de Mantecados El Santo. Se va a ejecutar la aplicación y, para visualizar los resultados, "
 			+ "dirígase a la base de datos y consulte las tablas RESULTADOS o RESULTADOS AGRUPADOS."
@@ -129,12 +132,12 @@ public class App {
 			for (Formula formula : formulaArticulo) {
 
 				List<Entrada_Materia_Prima> fabricacionesProducto = devuelveFabricaciones(connection,
-						formula.getReferencia_amasijo());
+						formula.getReferencia_materia_prima());
 
 				Double kgNecesarios = (amasijo.getPeso_total());
 
 				Double totalFabricacionDisponible = fabricacionesProducto.stream()
-						.mapToDouble(Entrada_Materia_Prima::getCantidad_disponible).sum();
+						.mapToDouble(Entrada_Materia_Prima::getDisponible).sum();
 
 				if (totalFabricacionDisponible >= kgNecesarios) {
 
@@ -156,9 +159,9 @@ public class App {
 
 			if (CollectionUtils.isNotEmpty(resultadosAgrupados)) {
 
-				insertarResultadosAgrupados(connection, new ResultadoAgrupado(amasijo.getLote().toString(),
-						amasijo.getDescripcion(), amasijo.getCantidad_amasijo(), amasijo.getPeso_total(), 
-						resultadosAgrupados));
+				insertarResultadosAgrupados(connection,
+						new ResultadoAgrupado(amasijo.getLote().toString(), amasijo.getDescripcion(),
+								amasijo.getCantidad_amasijo(), amasijo.getPeso_total(), resultadosAgrupados));
 			}
 
 		}
@@ -166,8 +169,10 @@ public class App {
 	}
 
 	private static Double procesar(Connection connection, List<String> resultadosAgrupados, Amasijo envasado,
-			List<Formula> formulaArticulo, Double auxKgNecesarios, Entrada_Materia_Prima entrada_materia_prima) throws SQLException {
-		if (entrada_materia_prima.getCantidad_disponible() >= auxKgNecesarios) {// Si cantidadDisponible es mayot que kgnecesarios
+			List<Formula> formulaArticulo, Double auxKgNecesarios, Entrada_Materia_Prima entrada_materia_prima)
+			throws SQLException {
+		if (entrada_materia_prima.getDisponible() >= auxKgNecesarios) {// Si cantidadDisponible es mayot que
+																				// kgnecesarios
 
 			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, auxKgNecesarios, entrada_materia_prima);
 
@@ -177,10 +182,10 @@ public class App {
 		}
 
 		// Si cantidadDisponible es menor que kg necesarios
-		if (entrada_materia_prima.getCantidad_disponible() < auxKgNecesarios) {
+		if (entrada_materia_prima.getDisponible() < auxKgNecesarios) {
 
-			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo, entrada_materia_prima.getCantidad_disponible(),
-					entrada_materia_prima);
+			rellenarListaOperacionEnvase(resultadosAgrupados, formulaArticulo,
+					entrada_materia_prima.getDisponible(), entrada_materia_prima);
 
 			auxKgNecesarios = procesarResultadocantidadDisponibleMenorKGNecesarios(connection, auxKgNecesarios,
 					entrada_materia_prima, envasado);
@@ -202,11 +207,11 @@ public class App {
 
 		auxKgNecesarios = (Math.round(auxKgNecesarios * 100.0) / 100.0);
 		if (formulaArticulo.size() > 1) {
-			resultadosAgrupados.add(auxKgNecesarios + "(" + entrada_materia_prima.getLote_fabricacion() + "-"
-					+ entrada_materia_prima.getReferencia_producto() + ")");
+			resultadosAgrupados.add(auxKgNecesarios + "(" + entrada_materia_prima.getLote() + "-"
+					+ entrada_materia_prima.getRef_materia_prima() + ")");
 		} else {
 
-			resultadosAgrupados.add(auxKgNecesarios + "(" + entrada_materia_prima.getLote_fabricacion() + ")");
+			resultadosAgrupados.add(auxKgNecesarios + "(" + entrada_materia_prima.getLote() + ")");
 		}
 	}
 
@@ -230,27 +235,27 @@ public class App {
 	private static Double procesarResultadocantidadDisponibleMenorKGNecesarios(Connection connection,
 			Double kgNecesarios, Entrada_Materia_Prima entrada_materia_prima, Amasijo amasijo) throws SQLException {
 
-		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(),
-				amasijo.getLote(), entrada_materia_prima.getLote_fabricacion(), entrada_materia_prima.getCantidad_disponible(),
-				entrada_materia_prima.getReferencia_producto());
+		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(), amasijo.getLote(),
+				entrada_materia_prima.getLote(), entrada_materia_prima.getDisponible(),
+				entrada_materia_prima.getRef_materia_prima());
 
 		// actualizar entrada_materia_prima
-		actualizarFabricacion(connection, entrada_materia_prima.getId_fabricacion(), 0.0);
+		actualizarFabricacion(connection, entrada_materia_prima.getId_materia_prima(), 0.0);
 
-		return kgNecesarios - entrada_materia_prima.getCantidad_disponible();
+		return kgNecesarios - entrada_materia_prima.getDisponible();
 	}
 
 	private static Double procesarResultadocantidadDisponibleMayorKGNecesarios(Connection connection,
 			Double kgNecesarios, Entrada_Materia_Prima entrada_materia_prima, Amasijo amasijo) throws SQLException {
 
-		double cantidadDisponibleActualizada = entrada_materia_prima.getCantidad_disponible() - kgNecesarios;
+		double cantidadDisponibleActualizada = entrada_materia_prima.getDisponible() - kgNecesarios;
 		// Insertar en resultados;
-		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(),
-				amasijo.getLote(), entrada_materia_prima.getLote_fabricacion(), kgNecesarios,
-				entrada_materia_prima.getReferencia_producto());
+		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(), amasijo.getLote(),
+				entrada_materia_prima.getLote(), kgNecesarios,
+				entrada_materia_prima.getRef_materia_prima());
 
 		// actualizar entrada_materia_prima
-		actualizarFabricacion(connection, entrada_materia_prima.getId_fabricacion(), cantidadDisponibleActualizada);
+		actualizarFabricacion(connection, entrada_materia_prima.getId_materia_prima(), cantidadDisponibleActualizada);
 
 		return 0.0;
 	}
@@ -295,15 +300,24 @@ public class App {
 			throws SQLException {
 
 		PreparedStatement prepared = connection
-				.prepareStatement(SELECT_FABRICACIONESBYREF_PRODUCTO_AND_CANTIDAD_DISPONIBLE);
+				.prepareStatement(SELECT_MATERIA_PRIMA_BY_REF_MPRIMA_AND_KG_DISPONIBLE);
 		prepared.setString(1, referencia_producto);
 		ResultSet rs = prepared.executeQuery();
 		List<Entrada_Materia_Prima> lista_fabricacion = new ArrayList<Entrada_Materia_Prima>();
 
 		while (rs.next()) {
-			lista_fabricacion.add(new Entrada_Materia_Prima(rs.getLong(FABRICACION_ID), rs.getInt(FABRICACION_LOTE_PRODUCTO),
-					rs.getString(FABRICACION_REF_PRODUCTO), rs.getInt(FABRICACION_CANTIDAD_FABRICADA),
-					rs.getDouble(FABRICACION_CANTIDAD_DISPONIBLE)));
+			lista_fabricacion.add(
+					new Entrada_Materia_Prima(
+							rs.getLong(MATERIA_PRIMA_ID), 
+							rs.getInt(MATERIA_PRIMA_LOTE), 
+							rs.getString(MATERIA_PRIMA_REFERENCIA), 
+							rs.getDouble(MATERIA_PRIMA_ENTRADA), 
+							rs.getDouble(MATERIA_PRIMA_DISPONIBLE),
+							rs.getString(MATERIA_PRIMA_PROVEEDOR),
+							rs.getString(MATERIA_PRIMA_LOTE_EXTERNO), 
+							rs.getString(MATERIA_PRIMA_ALBARAN))
+					);
+					
 
 		}
 
