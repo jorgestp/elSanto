@@ -57,6 +57,12 @@ public class ResultadoAgrupado {
 	public void setCantidad_amasijo(Integer cantidad_amasijo) {
 		this.cantidad_amasijo = cantidad_amasijo;
 	}
+	@Override
+	public String toString() {
+		return "ResultadoAgrupado [lote=" + lote + ", descripcion_producto=" + descripcion_producto
+				+ ", cantidad_amasijo=" + cantidad_amasijo + ", pesoTotal=" + pesoTotal + ", resultados_agrupados="
+				+ resultados_agrupados + "]";
+	}
 	
 	
 	

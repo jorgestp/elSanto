@@ -60,12 +60,12 @@ public class App {
 	private static final String SELECT_MATERIA_PRIMA_BY_REF_MPRIMA_AND_KG_DISPONIBLE = "SELECT * FROM ENTRADA_MATERIA_PRIMA "
 			+ "WHERE REFERENCIA_MATERIA_PRIMA = ? AND KG_DISPONIBLE > 0";
 
-	private static final String INSERT_RESULTADO = "INSERT INTO RESULTADOS (referencia_envasado, descripcion, lote_envasado, lote_fabricacion, cantidad_kg, producto) "
-			+ "VALUES (?,?,?,?,?,?)";
+//	private static final String INSERT_RESULTADO = "INSERT INTO RESULTADOS (referencia_envasado, descripcion, lote_envasado, lote_fabricacion, cantidad_kg, producto) "
+//			+ "VALUES (?,?,?,?,?,?)";
 
 	private static final String UPDATE_FABIRCACION = "UPDATE ENTRADA_MATERIA_PRIMA SET KG_DISPONIBLE = ? WHERE ID_MATERIA_PRIMA = ?";
 
-	private static final String UPDATE_ENVASADO_FINALIZADO = "UPDATE ENVASADOS SET FINALIZADO = 1 WHERE ID_ENVASADO = ?";
+	private static final String UPDATE_AMASIJO_FINALIZADO = "UPDATE AMASIJO SET FINALIZADO = 1 WHERE ID_AMASIJO = ?";
 	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, cantidad_amasijos, peso_total, operacion_trazabilidad) VALUES (?,?,?,?,?)";
 
 	private static final Object MENSAJE_INFORMATIVO = "BIENVENIDO a la aplicación de trazabilidad de Mantecados El Santo. Se va a ejecutar la aplicación y, para visualizar los resultados, "
@@ -125,6 +125,7 @@ public class App {
 
 	private static void recorrerLista(List<Amasijo> amasijosSinTerminar, Connection connection) throws SQLException {
 		List<String> resultadosAgrupados;
+		try {
 		for (Amasijo amasijo : amasijosSinTerminar) {
 			resultadosAgrupados = new ArrayList<String>();
 			List<Formula> formulaArticulo = buscarFormulaPorArticulo(connection, amasijo.getReferencia_amasijo());
@@ -164,6 +165,10 @@ public class App {
 								amasijo.getCantidad_amasijo(), amasijo.getPeso_total(), resultadosAgrupados));
 			}
 
+		}
+		
+		}catch (Exception e) {
+			e.printStackTrace();
 		}
 
 	}
@@ -225,8 +230,9 @@ public class App {
 
 		prepared.setString(1, resultadoAgrupado.getLote());
 		prepared.setString(2, resultadoAgrupado.getDescripcion_producto());
-		prepared.setDouble(3, resultadoAgrupado.getPesoTotal());
-		prepared.setString(4, resultado);
+		prepared.setString(3, resultadoAgrupado.getCantidad_amasijo().toString());
+		prepared.setDouble(4, resultadoAgrupado.getPesoTotal());
+		prepared.setString(5, resultado);
 
 		prepared.executeUpdate();
 
@@ -235,9 +241,9 @@ public class App {
 	private static Double procesarResultadocantidadDisponibleMenorKGNecesarios(Connection connection,
 			Double kgNecesarios, Entrada_Materia_Prima entrada_materia_prima, Amasijo amasijo) throws SQLException {
 
-		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(), amasijo.getLote(),
-				entrada_materia_prima.getLote(), entrada_materia_prima.getDisponible(),
-				entrada_materia_prima.getRef_materia_prima());
+//		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(), amasijo.getLote(),
+//				entrada_materia_prima.getLote(), entrada_materia_prima.getDisponible(),
+//				entrada_materia_prima.getRef_materia_prima());
 
 		// actualizar entrada_materia_prima
 		actualizarFabricacion(connection, entrada_materia_prima.getId_materia_prima(), 0.0);
@@ -250,9 +256,9 @@ public class App {
 
 		double cantidadDisponibleActualizada = entrada_materia_prima.getDisponible() - kgNecesarios;
 		// Insertar en resultados;
-		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(), amasijo.getLote(),
-				entrada_materia_prima.getLote(), kgNecesarios,
-				entrada_materia_prima.getRef_materia_prima());
+//		insertarResultado(connection, amasijo.getReferencia_amasijo(), amasijo.getDescripcion(), amasijo.getLote(),
+//				entrada_materia_prima.getLote(), kgNecesarios,
+//				entrada_materia_prima.getRef_materia_prima());
 
 		// actualizar entrada_materia_prima
 		actualizarFabricacion(connection, entrada_materia_prima.getId_materia_prima(), cantidadDisponibleActualizada);
@@ -262,7 +268,7 @@ public class App {
 
 	private static void atualizarFinalizadoEnvasado(Connection connection, Long id_envasado) throws SQLException {
 
-		PreparedStatement prepared = connection.prepareStatement(UPDATE_ENVASADO_FINALIZADO);
+		PreparedStatement prepared = connection.prepareStatement(UPDATE_AMASIJO_FINALIZADO);
 
 		prepared.setLong(1, id_envasado);
 
@@ -280,21 +286,21 @@ public class App {
 
 	}
 
-	private static void insertarResultado(Connection connection, String referencia_articulo, String descripcion,
-			Integer lote_envasado, Integer lote_fabricacion, Double kgNecesarios, String refProducto)
-			throws SQLException {
-
-		PreparedStatement prepared = connection.prepareStatement(INSERT_RESULTADO);
-
-		prepared.setString(1, referencia_articulo);
-		prepared.setString(2, descripcion);
-		prepared.setInt(3, lote_envasado);
-		prepared.setInt(4, lote_fabricacion);
-		prepared.setDouble(5, kgNecesarios);
-		prepared.setString(6, refProducto);
-
-		prepared.executeUpdate();
-	}
+//	private static void insertarResultado(Connection connection, String referencia_articulo, String descripcion,
+//			Integer lote_envasado, Integer lote_fabricacion, Double kgNecesarios, String refProducto)
+//			throws SQLException {
+//
+//		PreparedStatement prepared = connection.prepareStatement(INSERT_RESULTADO);
+//
+//		prepared.setString(1, referencia_articulo);
+//		prepared.setString(2, descripcion);
+//		prepared.setInt(3, lote_envasado);
+//		prepared.setInt(4, lote_fabricacion);
+//		prepared.setDouble(5, kgNecesarios);
+//		prepared.setString(6, refProducto);
+//
+//		prepared.executeUpdate();
+//	}
 
 	private static List<Entrada_Materia_Prima> devuelveFabricaciones(Connection connection, String referencia_producto)
 			throws SQLException {

@@ -41,5 +41,12 @@ public class Formula {
 		this.kilos = kilos;
 	}
 
+	@Override
+	public String toString() {
+		return "Formula [referencia_amasijo=" + referencia_amasijo + ", referencia_materia_prima="
+				+ referencia_materia_prima + ", kilos=" + kilos + "]";
+	}
+
+	
 	
 }

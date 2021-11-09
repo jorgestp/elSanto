@@ -74,6 +74,12 @@ public class Amasijo {
 	public void setFinalizado(Boolean finalizado) {
 		this.finalizado = finalizado;
 	}
+	@Override
+	public String toString() {
+		return "Amasijo [id_amasijo=" + id_amasijo + ", lote=" + lote + ", referencia_amasijo=" + referencia_amasijo
+				+ ", descripcion=" + descripcion + ", peso_unitario=" + peso_unitario + ", cantidad_amasijo="
+				+ cantidad_amasijo + ", peso_total=" + peso_total + ", finalizado=" + finalizado + "]";
+	}
 	
 
 	

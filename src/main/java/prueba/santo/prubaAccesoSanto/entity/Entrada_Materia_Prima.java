@@ -75,6 +75,14 @@ public class Entrada_Materia_Prima {
 	public void setAlbaran(String albaran) {
 		this.albaran = albaran;
 	}
+	@Override
+	public String toString() {
+		return "Entrada_Materia_Prima [id_materia_prima=" + id_materia_prima + ", lote=" + lote + ", ref_materia_prima="
+				+ ref_materia_prima + ", entrada=" + entrada + ", disponible=" + disponible + ", proveedor=" + proveedor
+				+ ", lote_externo=" + lote_externo + ", albaran=" + albaran + "]";
+	}
+	
+	
 	
 	
 }
