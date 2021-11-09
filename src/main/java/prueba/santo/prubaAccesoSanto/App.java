@@ -132,19 +132,20 @@ public class App {
 
 			for (Formula formula : formulaArticulo) {
 
-				List<Entrada_Materia_Prima> fabricacionesProducto = devuelveFabricaciones(connection,
+				List<Entrada_Materia_Prima> materiasPrimasDisponibles = devuelveMateriasPrimasDisponibles(connection,
 						formula.getReferencia_materia_prima());
 
-				Double kgNecesarios = (amasijo.getPeso_total());
+//				Double kgNecesarios = (amasijo.getPeso_total());
+				Double kgNecesarios = amasijo.getCantidad_amasijo() * formula.getKilos();
 
-				Double totalFabricacionDisponible = fabricacionesProducto.stream()
+				Double totalFabricacionDisponible = materiasPrimasDisponibles.stream()
 						.mapToDouble(Entrada_Materia_Prima::getDisponible).sum();
 
 				if (totalFabricacionDisponible >= kgNecesarios) {
 
 					Double auxKgNecesarios = kgNecesarios;
 
-					for (Entrada_Materia_Prima entrada_materia_prima : fabricacionesProducto) {
+					for (Entrada_Materia_Prima entrada_materia_prima : materiasPrimasDisponibles) {
 
 						if (auxKgNecesarios > 0.0) {
 
@@ -302,7 +303,7 @@ public class App {
 //		prepared.executeUpdate();
 //	}
 
-	private static List<Entrada_Materia_Prima> devuelveFabricaciones(Connection connection, String referencia_producto)
+	private static List<Entrada_Materia_Prima> devuelveMateriasPrimasDisponibles(Connection connection, String referencia_producto)
 			throws SQLException {
 
 		PreparedStatement prepared = connection
