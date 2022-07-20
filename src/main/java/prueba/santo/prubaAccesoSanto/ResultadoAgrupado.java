@@ -6,7 +6,7 @@ public class ResultadoAgrupado {
 	
 	private String lote;
 	private String descripcion_producto;
-	private Integer cantidad_amasijo;
+	private Double cantidad_amasijo;
 	private Double pesoTotal;
 	private List<String> resultados_agrupados;
 	
@@ -14,7 +14,7 @@ public class ResultadoAgrupado {
 	
 	
 	
-	public ResultadoAgrupado(String lote, String descripcion_producto, Integer cantidad_amasijo, Double pesoTotal,
+	public ResultadoAgrupado(String lote, String descripcion_producto, Double cantidad_amasijo, Double pesoTotal,
 			List<String> resultados_agrupados) {
 		super();
 		this.lote = lote;
@@ -51,10 +51,10 @@ public class ResultadoAgrupado {
 	public void setPesoTotal(Double pesoTotal) {
 		this.pesoTotal = pesoTotal;
 	}
-	public Integer getCantidad_amasijo() {
+	public Double getCantidad_amasijo() {
 		return cantidad_amasijo;
 	}
-	public void setCantidad_amasijo(Integer cantidad_amasijo) {
+	public void setCantidad_amasijo(Double cantidad_amasijo) {
 		this.cantidad_amasijo = cantidad_amasijo;
 	}
 	@Override

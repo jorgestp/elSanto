@@ -27,7 +27,8 @@ public class App {
 	static Connection conn = null;
 	static String driver = "sun.jdbc.odbc.JdbcOdbcDriver";
 
-	static String urlDocumentos = "jdbc:ucanaccess://C:/Users/Jorge/Documents/trazabilidad_Materia_Prima.mdb";
+	static String urlDocumentos = "jdbc:ucanaccess://C:/Users/USUARIO/Documents/trazabilidad_Materia_Prima.mdb";
+//	static String urlDocumentos = "jdbc:ucanaccess://C:/Users/Jorge/Documents/trazabilidad_Materia_Prima.mdb";
 
 //	static String url = "jdbc:ucanaccess://C:\\Users\\Jorge\\Documents\\bbddPrueba.accdb";
 //	private final static String urlRaiz = "jdbc:ucanaccess://C:\\elSanto.mdb";
@@ -101,8 +102,8 @@ public class App {
 				} else {
 
 					JOptionPane.showMessageDialog(null, "Proceso terminado CORRECTAMENTE.",
-							"Proceso terminado con algun artículo sin terminar "
-									+ "su trazabilidad. Asegurate que haya productos fabricados suficientes para terminar el proceso. Gracias",
+							"Proceso terminado con alguna materia prima sin terminar "
+									+ "su trazabilidad. Asegurate que haya materias primas en fábrica suficientes para terminar el proceso. Gracias",
 							JOptionPane.INFORMATION_MESSAGE);
 				}
 
@@ -117,7 +118,7 @@ public class App {
 
 			if (connection == null) {
 				JOptionPane.showMessageDialog(null,
-						"No es posible encontrar la base de datos en el directorio DOCUMENTOS con el nombre elSanto. Por favor, revise que el archivo está en esa ruta con ese nombre.",
+						"No es posible encontrar la base de datos en el directorio DOCUMENTOS con el nombre 'trazabilidad_Materia_Prima'. Por favor, revise que el archivo está en esa ruta con ese nombre.",
 						TRAZABILIDAD_EL_SANTO, JOptionPane.WARNING_MESSAGE);
 			}
 		}
@@ -163,7 +164,7 @@ public class App {
 
 				insertarResultadosAgrupados(connection,
 						new ResultadoAgrupado(amasijo.getLote().toString(), amasijo.getDescripcion(),
-								amasijo.getCantidad_amasijo(), amasijo.getPeso_total(), resultadosAgrupados));
+								amasijo.getCantidad_amasijo(), (amasijo.getCantidad_amasijo() *amasijo.getPeso_unitario()), resultadosAgrupados));
 			}
 
 		}
@@ -357,7 +358,7 @@ public class App {
 
 			envasados.add(new Amasijo(rs.getLong(AMASIJOS_ID), rs.getInt(AMASIJOS_LOTE_AMASIJO),
 					rs.getString(AMASIJOS_REF_AMASIJO), rs.getString(AMASIJOS_DESCRIPCION), rs.getDouble(AMASIJOS_PESO),
-					rs.getInt(AMASIJOS_CANTIDAD_AMASIJO), rs.getDouble(AMASIJOS_PESO_TOTAL),
+					rs.getDouble(AMASIJOS_CANTIDAD_AMASIJO), rs.getDouble(AMASIJOS_PESO_TOTAL),
 					rs.getBoolean(AMASIJOS_FECHA_FINALIZADO)));
 		}
 

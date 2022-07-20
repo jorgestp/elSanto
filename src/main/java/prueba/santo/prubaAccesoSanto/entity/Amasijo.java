@@ -7,7 +7,7 @@ public class Amasijo {
 	private String referencia_amasijo;
 	private String descripcion;
 	private Double peso_unitario;
-	private int cantidad_amasijo;
+	private double cantidad_amasijo;
 	private Double peso_total;
 	private Boolean finalizado;
 	
@@ -15,7 +15,7 @@ public class Amasijo {
 	
 	
 	public Amasijo(Long id_amasijo, Integer lote, String referencia_amasijo, String descripcion, Double peso_unitario,
-			int cantidad_amasijo, Double peso_total, Boolean finalizado) {
+			double cantidad_amasijo, Double peso_total, Boolean finalizado) {
 		super();
 		this.id_amasijo = id_amasijo;
 		this.lote = lote;
@@ -56,10 +56,10 @@ public class Amasijo {
 	public void setPeso_unitario(Double peso_unitario) {
 		this.peso_unitario = peso_unitario;
 	}
-	public int getCantidad_amasijo() {
+	public double getCantidad_amasijo() {
 		return cantidad_amasijo;
 	}
-	public void setCantidad_amasijo(int cantidad_amasijo) {
+	public void setCantidad_amasijo(double cantidad_amasijo) {
 		this.cantidad_amasijo = cantidad_amasijo;
 	}
 	public Double getPeso_total() {
