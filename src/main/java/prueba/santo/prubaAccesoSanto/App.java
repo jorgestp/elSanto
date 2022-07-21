@@ -27,11 +27,13 @@ public class App {
 	static Connection conn = null;
 	static String driver = "sun.jdbc.odbc.JdbcOdbcDriver";
 
-	static String urlAccessPcRosa = "jdbc:ucanaccess://C:/Users/Jorge/Documents/prueba.mdb";
-
-//	static String url = "jdbc:ucanaccess://C:\\Users\\Jorge\\Documents\\bbddPrueba.accdb";
-//	private final static String urlRaiz = "jdbc:ucanaccess://C:\\elSanto.mdb";
+	/**
+	 * PRODUCCION ROSA
+	 */
 	private final static String urlDocumentos = "jdbc:ucanaccess://C:\\Users\\USUARIO\\Documents\\elSanto.mdb";
+	
+	
+//	private final static String urlDocumentos = "jdbc:ucanaccess://C:\\Users\\Jorge\\Documents\\trazabilidad\\elSanto.mdb";
 
 	private static final String ENVASADOS_ID = "id_envasado";
 	private static final String ENVASADOS_LOTE_ENVASADO = "lote_envasado";
@@ -43,7 +45,7 @@ public class App {
 
 	private static final String FORMULA_REF_ARTICULO = "referencia_articulo";
 	private static final String FORMULA_REF_PRODUCTO = "referencia_producto";
-	private static final String FORMULA_PORCENTAJE = "porcentaje";
+	private static final String FORMULA_PESO_GRAMOS = "peso_gramos";
 
 	private static final String FABRICACION_ID = "id_fabricacion";
 	private static final String FABRICACION_LOTE_PRODUCTO = "lote_fabricacion";
@@ -56,13 +58,13 @@ public class App {
 	private static final String SELECT_FABRICACIONESBYREF_PRODUCTO_AND_CANTIDAD_DISPONIBLE = "SELECT * FROM FABRICACIONES "
 			+ "WHERE REFERENCIA_PRODUCTO = ? AND cantidad_disponible > 0";
 
-	private static final String INSERT_RESULTADO = "INSERT INTO RESULTADOS (referencia_envasado, descripcion, lote_envasado, lote_fabricacion, cantidad_kg, producto) "
-			+ "VALUES (?,?,?,?,?,?)";
+//	private static final String INSERT_RESULTADO = "INSERT INTO RESULTADOS (referencia_envasado, descripcion, lote_envasado, lote_fabricacion, cantidad_kg, producto) "
+//			+ "VALUES (?,?,?,?,?,?)";
 
 	private static final String UPDATE_FABIRCACION = "UPDATE FABRICACIONES SET CANTIDAD_DISPONIBLE = ? WHERE ID_FABRICACION = ?";
 
 	private static final String UPDATE_ENVASADO_FINALIZADO = "UPDATE ENVASADOS SET FINALIZADO = 1 WHERE ID_ENVASADO = ?";
-	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, peso, operacion_envase) VALUES (?,?,?,?)";
+	private static final String INSERT_RESULTADOS_AGRUPADOS = "INSERT INTO RESULTADOS_AGRUPADOS (lote, descripcion, peso_kilos, operacion_envase) VALUES (?,?,?,?)";
 
 	private static final Object MENSAJE_INFORMATIVO = "BIENVENIDO a la aplicación de trazabilidad de Mantecados El Santo. Se va a ejecutar la aplicación y, para visualizar los resultados, "
 			+ "dirígase a la base de datos y consulte las tablas RESULTADOS o RESULTADOS AGRUPADOS."
@@ -155,7 +157,7 @@ public class App {
 			if (CollectionUtils.isNotEmpty(resultadosAgrupados)) {
 
 				insertarResultadosAgrupados(connection, new ResultadoAgrupado(envasado.getLote_envasado().toString(),
-						envasado.getDescripcion(), envasado.getPeso() * envasado.getUnidades(), resultadosAgrupados));
+						envasado.getDescripcion(), (envasado.getPeso() * envasado.getUnidades())/1000, resultadosAgrupados));
 			}
 
 		}
@@ -227,9 +229,9 @@ public class App {
 	private static Double procesarResultadocantidadDisponibleMenorKGNecesarios(Connection connection,
 			Double kgNecesarios, Fabricacion fabricacion, Envasado envasado) throws SQLException {
 
-		insertarResultado(connection, envasado.getReferencia_articulo(), envasado.getDescripcion(),
-				envasado.getLote_envasado(), fabricacion.getLote_fabricacion(), fabricacion.getCantidad_disponible(),
-				fabricacion.getReferencia_producto());
+//		insertarResultado(connection, envasado.getReferencia_articulo(), envasado.getDescripcion(),
+//				envasado.getLote_envasado(), fabricacion.getLote_fabricacion(), fabricacion.getCantidad_disponible(),
+//				fabricacion.getReferencia_producto());
 
 		// actualizar fabricacion
 		actualizarFabricacion(connection, fabricacion.getId_fabricacion(), 0.0);
@@ -242,9 +244,9 @@ public class App {
 
 		double cantidadDisponibleActualizada = fabricacion.getCantidad_disponible() - kgNecesarios;
 		// Insertar en resultados;
-		insertarResultado(connection, envasado.getReferencia_articulo(), envasado.getDescripcion(),
-				envasado.getLote_envasado(), fabricacion.getLote_fabricacion(), kgNecesarios,
-				fabricacion.getReferencia_producto());
+//		insertarResultado(connection, envasado.getReferencia_articulo(), envasado.getDescripcion(),
+//				envasado.getLote_envasado(), fabricacion.getLote_fabricacion(), kgNecesarios,
+//				fabricacion.getReferencia_producto());
 
 		// actualizar fabricacion
 		actualizarFabricacion(connection, fabricacion.getId_fabricacion(), cantidadDisponibleActualizada);
@@ -272,21 +274,21 @@ public class App {
 
 	}
 
-	private static void insertarResultado(Connection connection, String referencia_articulo, String descripcion,
-			Integer lote_envasado, Integer lote_fabricacion, Double kgNecesarios, String refProducto)
-			throws SQLException {
-
-		PreparedStatement prepared = connection.prepareStatement(INSERT_RESULTADO);
-
-		prepared.setString(1, referencia_articulo);
-		prepared.setString(2, descripcion);
-		prepared.setInt(3, lote_envasado);
-		prepared.setInt(4, lote_fabricacion);
-		prepared.setDouble(5, kgNecesarios);
-		prepared.setString(6, refProducto);
-
-		prepared.executeUpdate();
-	}
+//	private static void insertarResultado(Connection connection, String referencia_articulo, String descripcion,
+//			Integer lote_envasado, Integer lote_fabricacion, Double kgNecesarios, String refProducto)
+//			throws SQLException {
+//
+//		PreparedStatement prepared = connection.prepareStatement(INSERT_RESULTADO);
+//
+//		prepared.setString(1, referencia_articulo);
+//		prepared.setString(2, descripcion);
+//		prepared.setInt(3, lote_envasado);
+//		prepared.setInt(4, lote_fabricacion);
+//		prepared.setDouble(5, kgNecesarios);
+//		prepared.setString(6, refProducto);
+//
+//		prepared.executeUpdate();
+//	}
 
 	private static List<Fabricacion> devuelveFabricaciones(Connection connection, String referencia_producto)
 			throws SQLException {
@@ -316,7 +318,7 @@ public class App {
 		List<Formula> formulaProducto = new ArrayList<Formula>();
 		while (rs.next()) {
 			formulaProducto.add(new Formula(rs.getNString(FORMULA_REF_ARTICULO), rs.getNString(FORMULA_REF_PRODUCTO),
-					rs.getDouble(FORMULA_PORCENTAJE)));
+					rs.getDouble(FORMULA_PESO_GRAMOS)));
 		}
 		rs.close();
 		prepared.close();
